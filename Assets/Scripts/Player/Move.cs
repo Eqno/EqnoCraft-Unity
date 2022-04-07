@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Move: MonoBehaviour
 {
-    [Header("移动速度")] public float moveSpeed = 5;
+    [Header("移动速度")] public float moveSpeed = 4;
     [Header("跳跃高度")] public float jumpHeight = 7;
     [Header("重力加速度")] public float gravityAcc = 20;
 
@@ -31,7 +31,7 @@ public class Move: MonoBehaviour
                     Input.GetAxis("Vertical") * Mathf.Cos(toRad(rotateX)) 
                     - Input.GetAxis("Horizontal") * Mathf.Sin(toRad(rotateX)))
                 ) * moveSpeed;
-            if (Input.GetButton("Jump")) direction.y = jumpHeight;
+            if (Input.GetButtonDown("Jump")) direction.y = jumpHeight;
         }
         direction.y -= gravityAcc * Time.deltaTime;
         _Player.Move(direction * Time.deltaTime);

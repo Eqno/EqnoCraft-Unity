@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class RayTest : MonoBehaviour
 {
+    [Header("放置方块索引")] public int index;
+    [Header("放置方块种类")] public GameObject[] Obj;
+    [Header("放置块父物体")] public GameObject Ground;
     [Header("射线检测距离")] public float maxDistance = 10;
-    [Header("放置方块种类")] public GameObject Grass, Ground;
 
     private Camera _camera;
     private GameObject _Player;
@@ -27,7 +29,7 @@ public class RayTest : MonoBehaviour
             {
                 Vector3 dir = transform.position - hit.transform.position;
                 Vector3 pos = hit.point + dir / dir.magnitude * PutBlock.EPS;
-                PutBlock.PutBlockAt(ref Ground, ref Grass, pos);
+                if (index < Obj.Length) PutBlock.PutBlockAt(ref Ground, ref Obj[index], pos);
             }
         }
     }
