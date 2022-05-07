@@ -4,6 +4,7 @@ using Assets.Scripts.Camera;
 public class View: MonoBehaviour
 { 
     [Header("摄像机")]
+    public float EPS = 0.01f;
     public float CameraRadius = 5;
     public float ZoomSensitivity = 3;
     public float MinZoomDistance = 2;
@@ -14,6 +15,7 @@ public class View: MonoBehaviour
     public float HorizentalSensitivity = 3;
 
     [Header("物品栏")]
+    
     public int InitialBlockIndex = 0;
     public float MaxRayDistance = 10;
     public GameObject[] CandidateBlocks;
@@ -166,11 +168,33 @@ public class View: MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Mouse1))
             {
                 // 反向追踪
-                Vector3 dir = transform.position - hit.transform.position;
-                Vector3 pos = hit.point + dir / dir.magnitude * ModifyBlock.EPS;
+                Vector3 pos = hit.point + hit.normal * EPS;
                 if (BlockIndex < CandidateBlocks.Length)
-                    ModifyBlock.PutBlockAt(ref CandidateBlocks[BlockIndex], pos);
+                {
+                    // 获取角色位置
+                    Vector3 playerPos = _Player.transform.position;
+                    Vector3 pp1 = playerPos + new Vector3(0, -0.5f, 0);
+                    Vector3 pp2 = playerPos + new Vector3(0, 0.5f, 0);
+                    // 整数化
+                    ProcessCoord(ref pp1);
+                    ProcessCoord(ref pp2);
+                    ProcessCoord(ref pos);
+                    // 如果不在角色身上且此处没有方块
+                    if (
+                        ! ModifyBlock.CheckBlock(pos)
+                        && (pos - pp1).magnitude > EPS
+                        && (pos - pp2).magnitude > EPS
+                    )
+                        ModifyBlock.PutBlockAt(ref CandidateBlocks[BlockIndex], pos);
+                }
             }
         }
+    }
+    // 坐标整数化
+    private void ProcessCoord(ref Vector3 pos)
+    {
+        pos.x = Mathf.Round(pos.x);
+        pos.y = Mathf.Round(pos.y);
+        pos.z = Mathf.Ceil(pos.z);
     }
 }

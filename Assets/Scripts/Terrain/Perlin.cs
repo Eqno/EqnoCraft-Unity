@@ -45,35 +45,19 @@ public class Perlin : MonoBehaviour
         {
             Vector3Int vert1 = new Vector3Int(x, 0, (int)_Player.position.z-width);
             if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(vert1)))
-            {
-                // Thread thread = new Thread(new ParameterizedThreadStart(GenerateSection));
-                // thread.Start(new Pair(vert1.x, vert1.z));
                 GenerateSection(new Pair(vert1.x, vert1.z));
-            }
             Vector3Int vert2 = new Vector3Int(x, 0, (int)_Player.position.z+width);
             if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(vert2)))
-            {
-                // Thread thread = new Thread(new ParameterizedThreadStart(GenerateSection));
-                // thread.Start(new Pair(vert2.x, vert2.z));
                 GenerateSection(new Pair(vert2.x, vert2.z));
-            }
         }
         for (int z=(int)_Player.position.z-width; z<(int)_Player.position.z+width; z++)
         {
             Vector3Int vert1 = new Vector3Int((int)_Player.position.x-length, 0, z);
             if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(vert1)))
-            {
-                // Thread thread = new Thread(new ParameterizedThreadStart(GenerateSection));
-                // thread.Start(new Pair(vert1.x, vert1.z));
                 GenerateSection(new Pair(vert1.x, vert1.z));
-            }
             Vector3Int vert2 = new Vector3Int((int)_Player.position.x+length, 0, z);
             if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(vert2)))
-            {
-                // Thread thread = new Thread(new ParameterizedThreadStart(GenerateSection));
-                // thread.Start(new Pair(vert2.x, vert2.z));
                 GenerateSection(new Pair(vert2.x, vert2.z));
-            }
         }
     }
     private int GetY(float x, float z, float depth, float relief)
