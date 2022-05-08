@@ -181,7 +181,7 @@ public class View: MonoBehaviour
                     ProcessCoord(ref pos);
                     // 如果不在角色身上且此处没有方块
                     if (
-                        ! ModifyBlock.CheckBlock(pos)
+                        ModifyBlock.GetFromMap(pos) == null
                         && (pos - pp1).magnitude > EPS
                         && (pos - pp2).magnitude > EPS
                     )

@@ -4,7 +4,7 @@ using UnityEngine;
 public class ObjectPool
 {
     public GameObject Object;
-    public int MaxNum = 10000;
+    public int MaxNum = 1000000;
     public Queue<GameObject> queue = new Queue<GameObject>();
     // 构造函数
     public ObjectPool(ref GameObject obj) { Object = obj; }
