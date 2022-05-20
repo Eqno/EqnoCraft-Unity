@@ -1,5 +1,4 @@
 using UnityEngine;
-using Assets.Scripts.Camera;
 
 public class View: MonoBehaviour
 { 
@@ -22,8 +21,8 @@ public class View: MonoBehaviour
     public float TabLeftLocation = -440;
     public float TabDownLocation = -640;
     public float SelectorMoveDistance = 110;
-    // 开始函数
-    void Start()
+    // 唤醒函数
+    void Awake()
     {
         Initialize();   
         StartState();
@@ -39,10 +38,10 @@ public class View: MonoBehaviour
     private Cross _Cross;
     private Camera _Camera;
     private int BlockIndex;
-    private GameObject _Player;
     private Vector2 TabLocation;
     private RectTransform BlockSelector;
     private bool firstPerson, corssEnabled;
+    private GameObject _Player, Terrain;
     private Vector3 cameraRotate, _cameraRadius, playerHeight;
     // 获取实例
     private void Initialize()
@@ -51,6 +50,7 @@ public class View: MonoBehaviour
         _Cross = GetComponent<Cross>();
         _Camera = GetComponent<Camera>();
         _Player = GameObject.Find("Player");
+        Terrain = GameObject.Find("Terrain");
         cameraRotate = new Vector3(0, 0, 0);
         playerHeight = new Vector3(0, 0.5f, 0);
         _cameraRadius = new Vector3(0, 0, -CameraRadius);
@@ -185,7 +185,7 @@ public class View: MonoBehaviour
                         && (pos - pp1).magnitude > EPS
                         && (pos - pp2).magnitude > EPS
                     )
-                        ModifyBlock.PutBlockAt(ref CandidateBlocks[BlockIndex], pos);
+                    ModifyBlock.PutBlockAt(ref CandidateBlocks[BlockIndex], pos);
                 }
             }
         }

@@ -1,144 +1,92 @@
-using System.Collections.Generic;
-using UnityEngine;
 using System.Collections;
-using Assets.Scripts.Camera;
-
+using System.Threading;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
 public class Perlin : MonoBehaviour
 {
+    public GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface;
     public int length = 30, width = 30;
-    public GameObject Grass, Dirt, Stone, Bedrock;
-    public int bedrockDepth = 3, stoneDepth = 20, dirtDepth = 8;
-    public float bedrockRelief = 3, stoneRelief = 30, dirtRelief = 30;
-
+    public int PutSpeed = 3, DelRadius = 3, LoadingTime = 3;
+    public int BedrockDepth = 3, StoneDepth = 15, DirtDepth = 5;
+    public float BedrockRelief = 3, StoneRelief = 15, DirtRelief = 20;
+    public int TreeRandMax = 10000, TreeRandMod = 444, TreeHeightMin = 5, TreeHeightMax = 8;
+    
+    private Expand expand;
+    private Contract contract;
     private Transform _Player;
     private float seedX, seedZ;
-    private GameObject Surface, Inside;
-    // 放置方块
-    IEnumerator PutBlockAt(GameObject obj, Vector3 pos, int state)
+    // 开始函数
+    private void Start()
     {
-        // 实例化
-        GameObject block = ModifyBlock.GetFromPool(obj, pos);
-        // 记录位置
-        ModifyBlock.AddIntoMap(pos, block);
-        // 未定
-        if (state == 0)
-        {
-            // 设置父亲
-            block.transform.SetParent(Surface.transform);
-            // 更新周围状态
-            ModifyBlock.UpdateState(pos);
-        }
-        // 内部
-        else if (state == 1)
-        {
-            block.transform.SetParent(Inside.transform);
-            block.GetComponent<MeshRenderer>().enabled = false;
-        }
-        // 外部
-        else if (state == 2)
-        {
-            block.transform.SetParent(Surface.transform);
-            block.GetComponent<MeshRenderer>().enabled = true;
-        }
-        yield return null;
+        // 生成随机种子
+        seedX = UnityEngine.Random.value * 100;
+        seedZ = UnityEngine.Random.value * 100;
+        // 视野拓展
+        expand = new Expand(
+            Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface,
+            seedX, seedZ, BedrockDepth, StoneDepth, DirtDepth,
+            BedrockRelief, StoneRelief, DirtRelief, PutSpeed,
+            TreeRandMax, TreeRandMod, TreeHeightMin, TreeHeightMax
+        );
+        // 视野收缩
+        contract = new Contract();
+        // 固定角色位置（固定在天空，等待地面加载）
+        GameObject.Find("Camera").GetComponent<Cross>().enabled = false;
+        _Player = GameObject.Find("Player").GetComponent<Transform>();
+        _Player.GetComponent<Move>().enabled = false;
+        // 生成地形
+        GenerateTerrain();
+        // 激活角色移动
+        StartCoroutine(ActiveActor());
     }
-    IEnumerator GenerateSection(int x, int z, bool init)
+    // 生成地形
+    private void GenerateTerrain()
     {
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z)))
-        {
-            int bedrockY = GetY(x, z, bedrockDepth, bedrockRelief);
-            int stoneY = bedrockDepth + stoneDepth + GetY(x, z, stoneDepth, stoneRelief);
-            int dirtY = stoneY + dirtDepth + GetY(x, z, dirtDepth, dirtRelief);
-            for (int y=-1; y<bedrockY; y++)
-            {
-                StartCoroutine(PutBlockAt(Bedrock, new Vector3(x, y, z), init?1:0));
-                if (! init) yield return null;
-            }
-            for (int y = bedrockY; y<stoneY; y++)
-            {
-                StartCoroutine(PutBlockAt(Stone, new Vector3(x, y, z), init?1:0));
-                if (! init) yield return null;
-            }
-            for (int y = stoneY; y<dirtY; y++)
-            {
-                StartCoroutine(PutBlockAt(Dirt, new Vector3(x, y, z), 0));
-                if (! init) yield return null;
-            }
-            StartCoroutine(PutBlockAt(Grass, new Vector3(x, dirtY, z), init?2:0));
-        }
-    }
-    IEnumerator DeleteSection(int x, int z)
-    {
-        long hash = ModifyBlock.GetHash(x, z);
-        if (ModifyBlock.map.ContainsKey(hash))
-        {
-            foreach (var item in ModifyBlock.map[hash])
-                ModifyBlock.DelIntoPool(item.Value);
-            ModifyBlock.map.Remove(hash);
-            yield return new WaitForEndOfFrame();
-        }
-    }
-    private void Awake()
-    {
-        Inside = GameObject.Find("Inside");
-        Surface = GameObject.Find("Surface");
-        seedX = Random.value * 100f;
-        seedZ = Random.value * 100f;
         for (int x=-length; x<length; x++)
             for (int z=-width; z<width; z++)
-                StartCoroutine(GenerateSection(x, z, true));
-        _Player = GameObject.Find("Player").GetComponent<Transform>();
+                StartCoroutine(expand.GenerateSection(x, z, -1));
     }
-    private void LateUpdate()
+    // 激活角色
+    IEnumerator ActiveActor()
+    {
+        yield return new WaitForSeconds(LoadingTime);
+        GameObject.Find("Camera").GetComponent<Cross>().enabled = true;
+        GameObject.Find("LoadingPanel").SetActive(false);
+        _Player.GetComponent<Move>().enabled = true;
+    }
+    // 更新函数
+    private void Update()
     {
         int x = (int)_Player.position.x, z = (int)_Player.position.z;
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z+width)))
-        {
-            for (int i=x-length; i<x+length; i++)
-                StartCoroutine(GenerateSection(i, z+width, false));
-        }
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z-width)))
-        {
-            for (int i=x-length; i<x+length; i++)
-                StartCoroutine(GenerateSection(i, z-width, false));
-        }
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x+length, z)))
-        {
-            for (int i=z-width; i<z+width; i++)
-                StartCoroutine(GenerateSection(x+length, i, false));
-        }
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x-length, z)))
-        {
-            for (int i=z-width; i<z+width; i++)
-                StartCoroutine(GenerateSection(x-length, i, false));
-        }
-        
-        if (ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z+width+1)))
-        {
-            for (int i=x-length-1; i<x+length+1; i++)
-                StartCoroutine(DeleteSection(i, z+width+1));
-        }
-        if (ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z-width-1)))
-        {
-            for (int i=x-length-1; i<x+length+1; i++)
-                StartCoroutine(DeleteSection(i, z-width-1));
-        }
-        if (ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x+length+1, z)))
-        {
-            for (int i=z-width-1; i<z+width+1; i++)
-                StartCoroutine(DeleteSection(x+length+1, i));
-        }
-        if (ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x-length-1, z)))
-        {
-            for (int i=z-width-1; i<z+width+1; i++)
-                StartCoroutine(DeleteSection(x-length-1, i));
-        }
+        ExpandSection(x, z);
+        ContractSection(x, z);
     }
-    private int GetY(float x, float z, float depth, float relief)
+    // 拓展视野区块
+    private void ExpandSection(int x, int z)
     {
-        float xSample = (x + seedX) / relief;
-        float zSample = (z + seedZ) / relief;
-        float noise = Mathf.PerlinNoise(xSample, zSample);
-        return (int)(depth * noise);
+        for (int i=x-length-1; i<x+length+1; i++)
+            StartCoroutine(expand.GenerateSection(i, z+width, 0));
+        for (int i=x-length-1; i<x+length+1; i++)
+            StartCoroutine(expand.GenerateSection(i, z-width, 1));
+        for (int i=z-width-1; i<z+width+1; i++)
+            StartCoroutine(expand.GenerateSection(x+length, i, 2));
+        for (int i=z-width-1; i<z+width+1; i++)
+            StartCoroutine(expand.GenerateSection(x-length, i, 3));
+    }
+    // 收缩视野区块
+    private void ContractSection(int x, int z)
+    {
+        for (int r=1; r<=DelRadius; r++)
+        {
+            for (int i=x-length-r-2; i<x+length+r+2; i++)
+                contract.DeleteSection(i, z+width+r);
+            for (int i=x-length-r-2; i<x+length+r+2; i++)
+                contract.DeleteSection(i, z-width-r);
+            for (int i=z-width-r-2; i<z+width+r+2; i++)
+                contract.DeleteSection(x+length+r, i);
+            for (int i=z-width-r-2; i<z+width+r+2; i++)
+                contract.DeleteSection(x-length-r, i);
+        }
     }
 }

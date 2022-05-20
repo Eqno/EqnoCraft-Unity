@@ -10,7 +10,7 @@ public class ObjectPool
     public ObjectPool(ref GameObject obj) { Object = obj; }
     // 对象入池
     public void Push(GameObject obj)
-    {
+    {        
         // 未满则塞
         if (queue.Count < MaxNum)
         {
