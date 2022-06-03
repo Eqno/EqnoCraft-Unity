@@ -5,6 +5,7 @@ public class ObjectPool
 {
     public GameObject Object;
     public int MaxNum = 1000000;
+    private static Vector3 disablePos = new Vector3(0, -10, 0);
     public Queue<GameObject> queue = new Queue<GameObject>();
     // 构造函数
     public ObjectPool(ref GameObject obj) { Object = obj; }
@@ -15,7 +16,8 @@ public class ObjectPool
         if (queue.Count < MaxNum)
         {
             queue.Enqueue(obj);
-            obj.SetActive(false);
+            obj.transform.position = disablePos;
+            obj.GetComponent<MeshRenderer>().enabled = false;
         }
         else MonoBehaviour.Destroy(obj);
     }
@@ -27,7 +29,7 @@ public class ObjectPool
         {
             GameObject obj = queue.Dequeue();
             obj.transform.position = pos;
-            obj.SetActive(true);
+            obj.GetComponent<MeshRenderer>().enabled = true;
             return obj;
         }
         return MonoBehaviour.Instantiate(Object, pos, Quaternion.identity);

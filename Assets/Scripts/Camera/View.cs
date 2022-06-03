@@ -105,7 +105,12 @@ public class View: MonoBehaviour
     private void ListenInput()
     {
         // 监听 ESC 退出游戏
-        if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+            // 保存游戏存档
+            GameDataManager.SaveGameData();
+        }
         // 监听 v 切换视角
         if (Input.GetKeyDown(KeyCode.V))
         {

@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Threading;
 using UnityEngine;
@@ -5,9 +6,9 @@ using System.Collections;
 public class Expand
 {
     public int BedrockDepth, StoneDepth, DirtDepth;
-    private GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface;
     public float seedX, seedZ, BedrockRelief, StoneRelief, DirtRelief;
-    public int PutSpeed, TreeRandMax, TreeRandMod, TreeHeightMin, TreeHeightMax;
+    private GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface;
+    public int TreeRandMax, TreeRandMod, TreeHeightMin, TreeHeightMax;
     // 构造传参
     public Expand(
         GameObject Grass,
@@ -26,7 +27,6 @@ public class Expand
         float BedrockRelief,
         float StoneRelief,
         float DirtRelief,
-        int PutSpeed,
         int TreeRandMax,
         int TreeRandMod,
         int TreeHeightMin,
@@ -48,17 +48,24 @@ public class Expand
         this.BedrockRelief = BedrockRelief;
         this.StoneRelief = StoneRelief;
         this.DirtRelief = DirtRelief;
-        this.PutSpeed = PutSpeed;
         this.TreeRandMax = TreeRandMax;
         this.TreeRandMod = TreeRandMod;
         this.TreeHeightMin = TreeHeightMin;
         this.TreeHeightMax = TreeHeightMax;
     }
+    // 解析 Prefab
+    private GameObject ParseBlock(string obj)
+    {
+        if (obj == "Grass(Clone) (UnityEngine.GameObject)") return Grass;
+        return null;
+    }
     // 生成区块
     public IEnumerator GenerateSection(int x, int z, int dir)
     {
+        // 获取哈希值
+        long hash = ModifyBlock.GetHash(x, z);
         // 如果此处没有方块
-        if (! ModifyBlock.map.ContainsKey(ModifyBlock.GetHash(x, z)))
+        if (! ModifyBlock.map.ContainsKey(hash))
         {
             // 计算基岩层高度
             int bedrockY = GetY(
@@ -81,14 +88,6 @@ public class Expand
                 DirtRelief,
                 seedX, seedZ
             );
-            // 种树
-            int t = GetT(x, z, seedX, seedZ, TreeRandMax);
-            if (t % TreeRandMod == 0)
-                EqnoTree.PlantTree(
-                    new Vector3Int(x, dirtY + 1, z),
-                    (t % (TreeHeightMax-TreeHeightMin) + TreeHeightMin),
-                    Wood, Leaf
-                );
             // 生成泥土层
             for (int y=dirtY-1; y>=stoneY; y--)
             {
@@ -97,6 +96,7 @@ public class Expand
                     new Vector3(x, y, z),
                     dir
                 );
+                yield return null;
             }
             // 生成草地层
             if (dir == -1) PutBlockAt(Grass, new Vector3(x, dirtY, z), -2);
@@ -109,8 +109,7 @@ public class Expand
                     new Vector3(x, y, z),
                     dir
                 );
-                if (dir != -1 && y % PutSpeed == 0)
-                    yield return null;
+                if (dir != -1) yield return null;
             }
             // 生成基岩层
             for (int y=bedrockY-1; y>=-1; y--)
@@ -120,6 +119,27 @@ public class Expand
                     new Vector3(x, y, z),
                     dir
                 );
+                yield return null;
+            }
+            // 种树
+            int t = GetT(x, z, seedX, seedZ, TreeRandMax);
+            if (t % TreeRandMod == 0)
+                EqnoTree.PlantTree(
+                    new Vector3Int(x, dirtY + 1, z),
+                    (t % (TreeHeightMax-TreeHeightMin) + TreeHeightMin),
+                    Wood, Leaf
+                );
+            yield return null;
+        }
+        if (ModifyBlock.change.ContainsKey(hash))
+        {
+            foreach (var i in ModifyBlock.change[hash])
+            {
+                Vector3 pos = new Vector3(x, i.Key, z);
+                if (ModifyBlock.GetFromMap(pos) != null)
+                    ModifyBlock.DelBlock(ModifyBlock.GetFromMap(pos));
+                GameObject obj = ParseBlock(i.Value);
+                if (obj != null) ModifyBlock.PutBlockAt(ref obj, pos);
             }
         }
     }
@@ -131,7 +151,7 @@ public class Expand
         if (dir == -1)
         {
             block.transform.SetParent(Inside.transform);
-            block.SetActive(false);
+            block.GetComponent<MeshRenderer>().enabled = false;
         }
         block.transform.SetParent(Surface.transform);
         ModifyBlock.UpdateAround(pos);

@@ -1,13 +1,11 @@
-using System.Collections;
-using System.Threading;
-using UnityEngine;
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using UnityEngine;
 public class Perlin : MonoBehaviour
 {
     public GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface;
     public int length = 30, width = 30;
-    public int PutSpeed = 3, DelRadius = 3, LoadingTime = 3;
+    public int DelRadius = 3, LoadingTime = 3;
     public int BedrockDepth = 3, StoneDepth = 15, DirtDepth = 5;
     public float BedrockRelief = 3, StoneRelief = 15, DirtRelief = 20;
     public int TreeRandMax = 10000, TreeRandMod = 444, TreeHeightMin = 5, TreeHeightMax = 8;
@@ -19,14 +17,18 @@ public class Perlin : MonoBehaviour
     // 开始函数
     private void Start()
     {
+        // 加载游戏存档
+        GameDataManager.LoadGameData();
         // 生成随机种子
-        seedX = UnityEngine.Random.value * 100;
-        seedZ = UnityEngine.Random.value * 100;
+        // seedX = UnityEngine.Random.value * 100;
+        // seedZ = UnityEngine.Random.value * 100;
+        // Debug.Log(seedX); Debug.Log(seedZ);
+        seedX = 31.67216f; seedZ = 44.3287f;
         // 视野拓展
         expand = new Expand(
             Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface,
             seedX, seedZ, BedrockDepth, StoneDepth, DirtDepth,
-            BedrockRelief, StoneRelief, DirtRelief, PutSpeed,
+            BedrockRelief, StoneRelief, DirtRelief,
             TreeRandMax, TreeRandMod, TreeHeightMin, TreeHeightMax
         );
         // 视野收缩
@@ -77,15 +79,15 @@ public class Perlin : MonoBehaviour
     // 收缩视野区块
     private void ContractSection(int x, int z)
     {
-        for (int r=1; r<=DelRadius; r++)
+        for (int r=5; r<=5+DelRadius; r++)
         {
-            for (int i=x-length-r-2; i<x+length+r+2; i++)
+            for (int i=x-length-r-1; i<x+length+r+1; i++)
                 contract.DeleteSection(i, z+width+r);
-            for (int i=x-length-r-2; i<x+length+r+2; i++)
+            for (int i=x-length-r-1; i<x+length+r+1; i++)
                 contract.DeleteSection(i, z-width-r);
-            for (int i=z-width-r-2; i<z+width+r+2; i++)
+            for (int i=z-width-r-1; i<z+width+r+1; i++)
                 contract.DeleteSection(x+length+r, i);
-            for (int i=z-width-r-2; i<z+width+r+2; i++)
+            for (int i=z-width-r-1; i<z+width+r+1; i++)
                 contract.DeleteSection(x-length-r, i);
         }
     }

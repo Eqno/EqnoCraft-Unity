@@ -11,6 +11,8 @@ public static class ModifyBlock
     // 方块位置
     public static Dictionary<long, Dictionary<int, GameObject>> map
         = new Dictionary<long, Dictionary<int, GameObject>>();
+    public static Dictionary<long, Dictionary<int, string>> change
+        = new Dictionary<long, Dictionary<int, string>>();
     // 获取实例
     public static GameObject GetFromPool(GameObject obj, Vector3 pos)
     {
@@ -61,11 +63,23 @@ public static class ModifyBlock
             }
         }
     }
+    // 向 Change 中添加引用
+    public static void AddIntoChange(Vector3 pos, GameObject obj)
+    {
+        long hash = GetHash(pos.x, pos.z);
+        if (! change.ContainsKey(hash))
+            change.Add(hash, new Dictionary<int, string>());
+        var dic = change[hash];
+        if (! dic.ContainsKey((int)pos.y))
+            if (obj != null) dic.Add((int)pos.y, obj.ToString());
+            else dic.Add((int)pos.y, "null");
+    }
     // 删除方块
     public static void DelBlock(GameObject obj)
     {
         // 清空位置
         DelFromMap(obj.transform.position);
+        AddIntoChange(obj.transform.position, null);
         // 更新周围状态
         UpdateAround(obj.transform.position);
         // 销毁实例
@@ -79,6 +93,7 @@ public static class ModifyBlock
         block.transform.SetParent(Surface.transform);
         // 记录位置
         AddIntoMap(pos, block);
+        AddIntoChange(pos, block);
         // 更新周围状态
         UpdateAround(pos);
     }
@@ -99,12 +114,14 @@ public static class ModifyBlock
         if (obj == null) return;
         if (CheckAround(pos))
         {
-            obj.SetActive(true);
+            // obj.SetActive(true);
+            obj.GetComponent<MeshRenderer>().enabled = true;
             obj.transform.SetParent(Surface.transform);
         }
         else
         {
-            obj.SetActive(false);
+            // obj.SetActive(false);
+            obj.GetComponent<MeshRenderer>().enabled = false;
             obj.transform.SetParent(Inside.transform);
         }
     }
