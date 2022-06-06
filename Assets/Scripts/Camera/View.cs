@@ -42,6 +42,7 @@ public class View: MonoBehaviour
     private RectTransform BlockSelector;
     private bool firstPerson, corssEnabled;
     private GameObject _Player, Terrain;
+    private SkinnedMeshRenderer CharacterHead, CharacterBody;
     private Vector3 cameraRotate, _cameraRadius, playerHeight;
     // 获取实例
     private void Initialize()
@@ -52,8 +53,12 @@ public class View: MonoBehaviour
         _Player = GameObject.Find("Player");
         Terrain = GameObject.Find("Terrain");
         cameraRotate = new Vector3(0, 0, 0);
-        playerHeight = new Vector3(0, 0.5f, 0);
+        playerHeight = new Vector3(0, 1.5f, 0);
         _cameraRadius = new Vector3(0, 0, -CameraRadius);
+        CharacterHead = GameObject.Find("f1_5361a_head_hd.mesh")
+            .GetComponent<SkinnedMeshRenderer>();
+        CharacterBody = GameObject.Find("f1_5361_body_hd.mesh")
+            .GetComponent<SkinnedMeshRenderer>();
         // 物品栏
         BlockIndex = InitialBlockIndex;
         BlockSelector = GameObject.Find("TabPartTwo")
@@ -66,6 +71,8 @@ public class View: MonoBehaviour
     // 初始状态
     private void StartState()
     {
+        CharacterHead.enabled = false;
+        CharacterBody.enabled = false;
         corssEnabled = firstPerson = true;
         AdjustCross(corssEnabled);
     }
@@ -116,6 +123,16 @@ public class View: MonoBehaviour
         {
             firstPerson = !firstPerson;
             AdjustCross(firstPerson);
+            if (firstPerson)
+            {
+                CharacterHead.enabled = false;
+                CharacterBody.enabled = false;
+            }
+            else
+            {
+                CharacterHead.enabled = true;
+                CharacterBody.enabled = true;
+            }
         }
         // 监听 t 切换模式
         if (firstPerson && Input.GetKeyDown(KeyCode.T))
@@ -129,6 +146,7 @@ public class View: MonoBehaviour
             cameraRotate.x -= Input.GetAxis("Mouse Y") * VerticalSensitivity;
             cameraRotate.y += Input.GetAxis("Mouse X") * HorizentalSensitivity;
             LimiteValue(ref cameraRotate.x, MaxVerticalDegree, MinVerticalDegree);
+            _Player.transform.eulerAngles = new Vector3(0, cameraRotate.y, 0);
         }
         // 监听摄像机距离
         _cameraRadius.z += Input.GetAxis("Mouse ScrollWheel") * ZoomSensitivity;

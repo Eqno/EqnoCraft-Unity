@@ -28,6 +28,6 @@ public class Contract
         }
         // 如果存在树木方块
         if (EqnoTree.map.ContainsKey(hash))
-            ModifyBlock.map.Remove(hash);
+            EqnoTree.map.Remove(hash);
     }
 }
