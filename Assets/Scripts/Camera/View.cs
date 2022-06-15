@@ -71,8 +71,8 @@ public class View: MonoBehaviour
     // 初始状态
     private void StartState()
     {
-        CharacterHead.enabled = false;
-        CharacterBody.enabled = false;
+        CharacterHead.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+        CharacterBody.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
         corssEnabled = firstPerson = true;
         AdjustCross(corssEnabled);
     }
@@ -125,13 +125,13 @@ public class View: MonoBehaviour
             AdjustCross(firstPerson);
             if (firstPerson)
             {
-                CharacterHead.enabled = false;
-                CharacterBody.enabled = false;
+                CharacterHead.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+                CharacterBody.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
             }
             else
             {
-                CharacterHead.enabled = true;
-                CharacterBody.enabled = true;
+                CharacterHead.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                CharacterBody.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             }
         }
         // 监听 t 切换模式
