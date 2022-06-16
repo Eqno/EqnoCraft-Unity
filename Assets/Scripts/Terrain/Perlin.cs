@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 public class Perlin : MonoBehaviour
 {
-    public GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface;
+    public GameObject Grass, Dirt, Stone, Bedrock, Wood, Leaf, Inside, Surface, SettingPanel;
     public int length = 30, width = 30;
     public int DelRadius = 3, LoadingTime = 3;
     public int BedrockDepth = 3, StoneDepth = 15, DirtDepth = 5;
@@ -37,6 +37,8 @@ public class Perlin : MonoBehaviour
         GameObject.Find("Camera").GetComponent<Cross>().enabled = false;
         _Player = GameObject.Find("Player").GetComponent<Transform>();
         _Player.GetComponent<Move>().enabled = false;
+        SettingPanel = GameObject.Find("SettingPanel");
+        SettingPanel.SetActive(false);
         // 生成地形
         GenerateTerrain();
         // 激活角色移动

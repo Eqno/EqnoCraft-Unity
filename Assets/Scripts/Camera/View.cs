@@ -12,15 +12,16 @@ public class View: MonoBehaviour
     public float MaxVerticalDegree = 90;
     public float VerticalSensitivity = 3;
     public float HorizentalSensitivity = 3;
-
     [Header("物品栏")]
-    
     public int InitialBlockIndex = 0;
     public float MaxRayDistance = 10;
     public GameObject[] CandidateBlocks;
     public float TabLeftLocation = -440;
     public float TabDownLocation = -640;
     public float SelectorMoveDistance = 110;
+    [Header("界面")]
+    public GameObject PlayingPanel;
+    public GameObject SettingPanel;
     // 唤醒函数
     void Awake()
     {
@@ -111,12 +112,13 @@ public class View: MonoBehaviour
     // 监听输入
     private void ListenInput()
     {
-        // 监听 ESC 退出游戏
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // 监听 ESC 打开设置
+        if (Input.GetKeyDown(KeyCode.Escape)
+            && _Player.GetComponent<Move>().enabled == true)
         {
-            Application.Quit();
-            // 保存游戏存档
-            GameDataManager.SaveGameData();
+            PlayingPanel.SetActive(false);
+            SettingPanel.SetActive(true);
+            AdjustCross(false);
         }
         // 监听 v 切换视角
         if (Input.GetKeyDown(KeyCode.V))

@@ -60,8 +60,20 @@ PrefabInstance:
       value: 123
       objectReference: {fileID: 0}
     - target: {fileID: 5795192459528524509, guid: d0189583d8ed98742bcd4074487c157e, type: 3}
+      propertyPath: m_ImportantGI
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5795192459528524509, guid: d0189583d8ed98742bcd4074487c157e, type: 3}
+      propertyPath: m_LightProbeUsage
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5795192459528524509, guid: d0189583d8ed98742bcd4074487c157e, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5795192459528524509, guid: d0189583d8ed98742bcd4074487c157e, type: 3}
+      propertyPath: m_ReflectionProbeUsage
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5795192459528524509, guid: d0189583d8ed98742bcd4074487c157e, type: 3}
       propertyPath: m_Materials.Array.data[0]
